@@ -8,15 +8,42 @@
 import SwiftUI
 
 struct ContentView: View {
+    @Environment(\.managedObjectContext) var moc
+    @FetchRequest(sortDescriptors: []) var timeblocks: FetchedResults<TimeBlock>
     var body: some View {
         NavigationStack {
             List {
-                Image(systemName: "globe")
-                    .imageScale(.large)
-                    .foregroundStyle(.tint)
-                Text("Hello, world!")
+                ForEach(timeblocks, id: \.name) { timeblock in
+                    Section {
+                        TimeBlockCell(timeBlock: timeblock)
+                            .listRowBackground(Color(uiColor: .systemFill))
+                    }
+                }
+                .onDelete(perform: deleteCell)
             }
             .navigationTitle("Today")
+            .toolbar {
+                ToolbarItem(placement: .topBarTrailing) {
+                    NavigationLink {
+                        ManualAddTimeBlockView()
+                    } label: {
+                        Image(systemName: "plus")
+                    }
+                }
+            }
+        }
+    }
+    
+    func deleteCell(at offsets: IndexSet) {
+        for index in offsets {
+            let timeblock = timeblocks[index]
+            moc.delete(timeblock)
+        }
+        
+        do {
+            try moc.save()
+        } catch let error {
+            fatalError("Error saving on delete of timeblock: \(error.localizedDescription)")
         }
     }
 }

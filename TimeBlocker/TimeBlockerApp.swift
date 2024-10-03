@@ -9,9 +9,12 @@ import SwiftUI
 
 @main
 struct TimeBlockerApp: App {
+    @StateObject private var dataManager = CoreDataManager()
+    
     var body: some Scene {
         WindowGroup {
             ContentView()
+                .environment(\.managedObjectContext, dataManager.container.viewContext)
         }
     }
 }

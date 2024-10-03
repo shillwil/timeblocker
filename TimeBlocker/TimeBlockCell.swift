@@ -11,47 +11,80 @@ struct TimeBlockCell: View {
     var timeBlock: TimeBlock
     var body: some View {
         VStack {
-            ZStack {
-                Color(uiColor: UIColor.systemFill)
-                VStack {
-                    HStack {
-                        VStack {
-                            HStack {
-                                Text(timeBlock.name)
-                                    .bold()
-                                Spacer()
-                            }
+            VStack {
+                HStack {
+                    VStack {
+                        timeBlockName
                             .padding(.leading)
                             .padding(.top, 12)
-                            HStack {
-                                Text(timeBlock.timeRangeString())
-                                    .font(.subheadline)
-                                    .bold()
-                                    .foregroundStyle(Color(uiColor: .secondaryLabel))
-                                Spacer()
-                            }
+                        
+                        timeBlockTime
                             .padding(.leading)
-                            Spacer()
-                            HStack {
-                                Text(timeBlock.durationString()!)
-                                    .font(.subheadline)
-                                    .bold()
-                                    .foregroundStyle(Color(uiColor: .secondaryLabel))
-                                Spacer()
-                            }
+                        
+                        Spacer()
+                        
+                        timeBlockDuration
                             .padding(.leading)
                             .padding(.bottom, 12)
-                        }
-                        Spacer()
-                        Image(systemName: "chevron.right")
-                            .foregroundStyle(Color(uiColor: .secondaryLabel))
-                            .padding(.trailing)
                     }
+                    
+                    Spacer()
                 }
             }
         }
-        .clipShape(RoundedRectangle(cornerRadius: 16))
         .frame(height: 100)
+    }
+    
+    private var timeBlockName: some View {
+        HStack {
+            Text(timeBlock.name ?? "(Couldn't fetch name)")
+                .bold()
+            Spacer()
+        }
+    }
+    
+    private var timeBlockTime: some View {
+        HStack {
+            Text(timeRangeString(startTime: timeBlock.startTime, endTime: timeBlock.endTime))
+                .font(.subheadline)
+                .bold()
+                .foregroundStyle(Color(uiColor: .secondaryLabel))
+            Spacer()
+        }
+    }
+    
+    private var timeBlockDuration: some View {
+        HStack {
+            Text(durationString(startTime: timeBlock.startTime, endTime: timeBlock.endTime))
+                .font(.subheadline)
+                .bold()
+                .foregroundStyle(Color(uiColor: .secondaryLabel))
+            Spacer()
+        }
+    }
+    
+    func durationString(startTime: Date?, endTime: Date?) -> String {
+        guard let startTime, let endTime else { return "(Error fetching duration)" }
+        let timeInterval = endTime.timeIntervalSince(startTime)
+        
+        let formatter = DateComponentsFormatter()
+        formatter.unitsStyle = .full
+        formatter.allowedUnits = [.hour, .minute]
+        
+        return formatter.string(from: timeInterval) ?? "(Error converting duration)"
+    }
+    
+    func timeRangeString(startTime: Date?, endTime: Date?) -> String {
+        guard let startTime, let endTime else { return "(Error fetching time range)"}
+        let formatter = DateFormatter()
+        formatter.dateFormat = "h:mma"
+        formatter.amSymbol = "am"
+        formatter.pmSymbol = "pm"
+        
+        let start = formatter.string(from: startTime)
+        let end = formatter.string(from: endTime)
+        
+        return "\(start)-\(end)"
     }
 }
 
@@ -59,8 +92,4 @@ struct TimeBlockCell: View {
     TimeBlockCell(timeBlock: timeblockTemplate)
 }
 
-let timeblockTemplate = TimeBlock(
-    name: "Reading",
-    startTime: Date(),
-    endTime: Calendar.current.date(byAdding: .hour, value: 2, to: Date())!
-)
+let timeblockTemplate = TimeBlock()
