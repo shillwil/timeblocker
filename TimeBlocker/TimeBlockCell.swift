@@ -8,6 +8,7 @@
 import SwiftUI
 
 struct TimeBlockCell: View {
+    var timeBlock: TimeBlock
     var body: some View {
         VStack {
             ZStack {
@@ -16,14 +17,14 @@ struct TimeBlockCell: View {
                     HStack {
                         VStack {
                             HStack {
-                                Text("Data Structures and Algorithms")
+                                Text(timeBlock.name)
                                     .bold()
                                 Spacer()
                             }
                             .padding(.leading)
                             .padding(.top, 12)
                             HStack {
-                                Text("8:00am-10:00am")
+                                Text(timeBlock.timeRangeString())
                                     .font(.subheadline)
                                     .bold()
                                     .foregroundStyle(Color(uiColor: .secondaryLabel))
@@ -32,7 +33,7 @@ struct TimeBlockCell: View {
                             .padding(.leading)
                             Spacer()
                             HStack {
-                                Text("2 Hours")
+                                Text(timeBlock.durationString()!)
                                     .font(.subheadline)
                                     .bold()
                                     .foregroundStyle(Color(uiColor: .secondaryLabel))
@@ -51,10 +52,15 @@ struct TimeBlockCell: View {
         }
         .clipShape(RoundedRectangle(cornerRadius: 16))
         .frame(height: 100)
-        .padding()
     }
 }
 
 #Preview {
-    TimeBlockCell()
+    TimeBlockCell(timeBlock: timeblockTemplate)
 }
+
+let timeblockTemplate = TimeBlock(
+    name: "Reading",
+    startTime: Date(),
+    endTime: Calendar.current.date(byAdding: .hour, value: 2, to: Date())!
+)
