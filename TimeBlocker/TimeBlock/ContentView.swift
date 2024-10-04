@@ -35,6 +35,9 @@ struct ContentView: View {
                     }
                 }
             }
+            .onAppear {
+                removeYesterdaysTimeblocks()
+            }
         }
     }
     
@@ -57,6 +60,22 @@ struct ContentView: View {
         }
         
         return false
+    }
+    
+    func removeYesterdaysTimeblocks() {
+        for timeblock in timeblocks {
+            guard let endTime = timeblock.endTime else { continue }
+            
+            if Calendar.current.isDateInYesterday(endTime) {
+                moc.delete(timeblock)
+                
+                do {
+                    try moc.save()
+                } catch let error {
+                    fatalError("Error saving on delete of yesterday's timeblock: \(error.localizedDescription)")
+                }
+            }
+        }
     }
 }
 
