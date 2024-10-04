@@ -9,26 +9,40 @@ import SwiftUI
 
 struct TimeBlockCell: View {
     var timeBlock: TimeBlock
+    
+    let totalWidth: CGFloat = UIScreen.main.bounds.width
+    
     var body: some View {
         VStack {
-            VStack {
-                HStack {
-                    VStack {
-                        timeBlockName
-                            .padding(.leading)
-                            .padding(.top, 12)
-                        
-                        timeBlockTime
-                            .padding(.leading)
+            ZStack(alignment: .leading) {
+                let progressWidth = totalWidth * CGFloat(calculateProgress())
+                
+                if let endTime = timeBlock.endTime, Date() < endTime {
+                    Rectangle()
+                        .fill(Color.green)
+                        .frame(width: progressWidth, height: 100)
+                        .shimmer()
+                }
+                
+                VStack {
+                    HStack {
+                        VStack {
+                            timeBlockName
+                                .padding(.leading)
+                                .padding(.top, 12)
+                            
+                            timeBlockTime
+                                .padding(.leading)
+                            
+                            Spacer()
+                            
+                            timeBlockDuration
+                                .padding(.leading)
+                                .padding(.bottom, 12)
+                        }
                         
                         Spacer()
-                        
-                        timeBlockDuration
-                            .padding(.leading)
-                            .padding(.bottom, 12)
                     }
-                    
-                    Spacer()
                 }
             }
         }
@@ -38,6 +52,7 @@ struct TimeBlockCell: View {
     private var timeBlockName: some View {
         HStack {
             Text(timeBlock.name ?? "(Couldn't fetch name)")
+                .foregroundStyle(labelColor())
                 .bold()
             Spacer()
         }
@@ -85,6 +100,22 @@ struct TimeBlockCell: View {
         let end = formatter.string(from: endTime)
         
         return "\(start)-\(end)"
+    }
+    
+    func calculateProgress() -> Double {
+        guard let startTime = timeBlock.startTime, let endTime = timeBlock.endTime else { return 0.0 }
+        let totalTime = endTime.timeIntervalSince(startTime)
+        let elapsedTime = Date().timeIntervalSince(startTime)
+        
+        return max(0, min(1, elapsedTime / totalTime))
+    }
+    
+    func labelColor() -> Color {
+        if let endTime = timeBlock.endTime, endTime < Date() {
+            return Color(uiColor: .darkGray)
+        }
+        
+        return Color(uiColor: .label)
     }
 }
 

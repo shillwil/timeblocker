@@ -14,10 +14,13 @@ struct ContentView: View {
         NavigationStack {
             List {
                 ForEach(timeblocks, id: \.name) { timeblock in
+                    let backgroundColor = timeblockHasEnded(timeblock.endTime) ? Color.gray : Color(uiColor: .systemFill)
                     Section {
                         TimeBlockCell(timeBlock: timeblock)
-                            .listRowBackground(Color(uiColor: .systemFill))
+                            .listRowBackground(backgroundColor)
                     }
+                    .listRowInsets(EdgeInsets())
+
                 }
                 .onDelete(perform: deleteCell)
             }
@@ -45,6 +48,14 @@ struct ContentView: View {
         } catch let error {
             fatalError("Error saving on delete of timeblock: \(error.localizedDescription)")
         }
+    }
+    
+    func timeblockHasEnded(_ endTime: Date?) -> Bool {
+        if let endTime, endTime < Date() {
+            return true
+        }
+        
+        return false
     }
 }
 
