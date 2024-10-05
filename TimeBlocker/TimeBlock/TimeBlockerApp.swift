@@ -13,7 +13,7 @@ struct TimeBlockerApp: App {
     
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            TimeBlockListView()
                 .environment(\.managedObjectContext, dataManager.container.viewContext)
         }
     }

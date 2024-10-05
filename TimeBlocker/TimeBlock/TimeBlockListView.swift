@@ -7,9 +7,10 @@
 
 import SwiftUI
 
-struct ContentView: View {
+struct TimeBlockListView: View {
     @Environment(\.managedObjectContext) var moc
-    @FetchRequest(sortDescriptors: []) var timeblocks: FetchedResults<TimeBlock>
+    @FetchRequest(sortDescriptors: [NSSortDescriptor(key: "startTime", ascending: true)]) var timeblocks: FetchedResults<TimeBlock>
+    
     var body: some View {
         NavigationStack {
             List {
@@ -34,6 +35,9 @@ struct ContentView: View {
                     }
                 }
             }
+            .onAppear {
+                removeYesterdaysTimeblocks()
+            }
         }
     }
     
@@ -57,8 +61,24 @@ struct ContentView: View {
         
         return false
     }
+    
+    func removeYesterdaysTimeblocks() {
+        for timeblock in timeblocks {
+            guard let endTime = timeblock.endTime else { continue }
+            
+            if Calendar.current.isDateInYesterday(endTime) {
+                moc.delete(timeblock)
+                
+                do {
+                    try moc.save()
+                } catch let error {
+                    fatalError("Error saving on delete of yesterday's timeblock: \(error.localizedDescription)")
+                }
+            }
+        }
+    }
 }
 
 #Preview {
-    ContentView()
+    TimeBlockListView()
 }
