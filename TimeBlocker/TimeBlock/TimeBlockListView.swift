@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-struct ContentView: View {
+struct TimeBlockListView: View {
     @Environment(\.managedObjectContext) var moc
     @FetchRequest(sortDescriptors: [NSSortDescriptor(key: "startTime", ascending: true)]) var timeblocks: FetchedResults<TimeBlock>
     
@@ -80,5 +80,5 @@ struct ContentView: View {
 }
 
 #Preview {
-    ContentView()
+    TimeBlockListView()
 }
