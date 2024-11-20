@@ -1,0 +1,22 @@
+# Xcode
+.DS_Store
+xcuserdata/
+*.xcscmblueprint
+*.xccheckout
+
+# Configurations
+Config/Local.xcconfig
+Config/Development.xcconfig
+Config/Staging.xcconfig
+Config/Production.xcconfig
+
+# Only commit example configurations
+!Config/Example.xcconfig
+
+# Other common ignores
+*.pbxuser
+*.mode1v3
+*.mode2v3
+*.perspectivev3
+*.xcworkspace
+!default.xcworkspace
