@@ -9,6 +9,7 @@ Config/Local.xcconfig
 Config/Development.xcconfig
 Config/Staging.xcconfig
 Config/Production.xcconfig
+Config/Base.xcconfig
 
 # Only commit example configurations
 !Config/Example.xcconfig
