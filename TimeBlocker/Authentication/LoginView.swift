@@ -63,6 +63,14 @@ struct LoginView: View {
             }
         }
     }
+    
+    private func handleSignUp() {
+        
+    }
+    
+    private func handleSignOut() {
+        
+    }
 }
 
 #Preview {

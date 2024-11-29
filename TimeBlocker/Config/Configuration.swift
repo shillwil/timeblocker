@@ -49,7 +49,7 @@ final class SecureKeys {
     private init() {
         // This will crash if values are missing, which is what we want during development
         guard let urlString: String = try? Configuration.value(for: Configuration.Keys.supabaseURL),
-              let url = URL(string: urlString),
+              let url = URL(string: urlString.replacingOccurrences(of: "\\", with: "")),
               let anonKey: String = try? Configuration.value(for: Configuration.Keys.supabaseAnonKey) else {
             fatalError("Missing required configuration. Ensure all keys are set in Config.xcconfig")
         }
