@@ -13,6 +13,7 @@ import LocalAuthentication
 enum AuthError: LocalizedError {
     case invalidCredentials
     case sessionExpired
+    case noSession
     case networkError(Error)
     case tokenError(String)
     case biometricError(Error)
@@ -24,6 +25,8 @@ enum AuthError: LocalizedError {
             return "Invalid email or password"
         case .sessionExpired:
             return "Session expired. Please sign in again"
+        case .noSession:
+            return "Something went wrong. Please try again in a few minutos."
         case .networkError(let error):
             return "Network error: \(error.localizedDescription)"
         case .tokenError(let message):
@@ -53,6 +56,7 @@ class AuthService: ObservableObject {
         case undefined
         case authenticated
         case notAuthenticated
+        case userCreated
     }
     
     init() {
@@ -123,31 +127,48 @@ class AuthService: ObservableObject {
     // MARK: - Authentication Methods
     
     func signIn(email: String, password: String) async throws {
-        isProcessing = true
-        defer { isProcessing = false }
+        defer {
+            Task { @MainActor in
+                isProcessing = false
+            }
+        }
+        
+        await MainActor.run { isProcessing = true }
         
         do {
-            try await supabaseAuth.auth.signIn(
+            let session = try await supabaseAuth.auth.signIn(
                 email: email,
                 password: password
             )
+            
+            try updateTokens(session: session)
         } catch {
+            print("====================SIGN IN ERROR====================\n\(error.localizedDescription)")
             throw AuthError.invalidCredentials
         }
+        
+        authState = .authenticated
     }
     
     func signUp(email: String, password: String) async throws {
-        isProcessing = true
-        defer { isProcessing = false }
+        defer {
+            Task { @MainActor in
+                isProcessing = false
+            }
+        }
+        
+        await MainActor.run { isProcessing = true }
         
         do {
-            let response = try await supabaseAuth.auth.signUp(
+            try await supabaseAuth.auth.signUp(
                 email: email,
                 password: password
             )
         } catch {
             throw AuthError.unknown(error)
         }
+        
+        await MainActor.run { authState = .userCreated }
     }
     
     func signOut() async throws {
@@ -204,5 +225,17 @@ class AuthService: ObservableObject {
         } catch {
             throw AuthError.networkError(error)
         }
+    }
+    
+    private func updateTokens(session: Session) throws {
+        try TokenManager.shared.saveToken(
+            token: session.accessToken,
+            key: .access
+        )
+        
+        try TokenManager.shared.saveToken(
+            token: session.refreshToken,
+            key: .refresh
+        )
     }
 }

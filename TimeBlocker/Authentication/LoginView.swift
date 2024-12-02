@@ -13,10 +13,18 @@ struct LoginView: View {
     @State private var password = ""
     @State private var showError = false
     @State private var errorMessage = ""
+    @State private var showUserCreationSuccess = false
+    @State private var pickerSelection = 0
     
     var body: some View {
         NavigationView {
             VStack {
+                Picker("Welcome", selection: $pickerSelection) {
+                    Text("Sign Up").tag(0)
+                    Text("Sign In").tag(1)
+                }
+                .pickerStyle(.segmented)
+                
                 TextField("Email", text: $email)
                     .textFieldStyle(RoundedBorderTextFieldStyle())
                     .autocapitalization(.none)
@@ -25,7 +33,7 @@ struct LoginView: View {
                 SecureField("Password", text: $password)
                     .textFieldStyle(RoundedBorderTextFieldStyle())
                 
-                Button("Sign In") {
+                Button(pickerSelection == 0 ? "Sign Up" : "Sign In") {
                     handleSignIn()
                 }
                 .disabled(authService.isProcessing)
@@ -35,16 +43,22 @@ struct LoginView: View {
                 }
             }
             .padding()
-            .navigationTitle("Login")
+            .navigationTitle(pickerSelection == 0 ? "Sign Up" : "Sign In")
             .alert("Error", isPresented: $showError) {
-                Button("OK", role: .cancel) { }
+                Button("OK", role: .cancel) {}
             } message: {
                 Text(errorMessage)
             }
+            .alert("User Created", isPresented: $showUserCreationSuccess) {
+                Button("OK", role: .cancel) {
+                    pickerSelection = 1
+                }
+            }
+            
         }
     }
     
-    private func handleSignIn() {
+    private func signIn() {
         Task {
             do {
                 try await authService.signIn(email: email, password: password)
@@ -64,8 +78,30 @@ struct LoginView: View {
         }
     }
     
-    private func handleSignUp() {
-        
+    private func signUp() {
+        Task {
+            do {
+                try await authService.signUp(email: email, password: password)
+            } catch {
+                await MainActor.run {
+                    errorMessage = (error as? AuthError)?.localizedDescription ?? error.localizedDescription
+                    showError = true
+                }
+            }
+            
+            showUserCreationSuccess = true
+        }
+    }
+    
+    private func handleSignIn() {
+        switch pickerSelection {
+        case 0:
+            signUp()
+        case 1:
+            signIn()
+        default:
+            signUp()
+        }
     }
     
     private func handleSignOut() {

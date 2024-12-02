@@ -22,7 +22,7 @@ struct TimeBlockerApp: App {
                 case .authenticated:
                     TimeBlockListView()
                         .environment(\.managedObjectContext, dataManager.container.viewContext)
-                case .notAuthenticated:
+                case .notAuthenticated, .userCreated:
                     LoginView()
                 }
             }
